@@ -153,10 +153,20 @@
   /* --- APP --- */
   #app { display:none; text-align:center; padding:4px; }
   .canvas-container { position:relative; max-width:400px; margin:20px auto; aspect-ratio:1/1; overflow:hidden; border-radius:16px; }
-  #scratch-canvas { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; cursor:pointer; transition:opacity 0.5s ease; }
-  #prize-container { width:100%; height:100%; background-image:url('1000214841.jpg'); background-size:cover; background-position:center; border-radius:16px; display:flex; align-items:center; justify-content:center; transition:transform 0.5s ease; }
-  #prize-name-display { display:none; background:rgba(0,0,0,0.7); padding:10px 16px; border-radius:12px; font-weight:900; font-size:1.6rem; text-shadow:0 0 10px gold; animation: glow 1s ease infinite alternate; }
-  @keyframes glow { from{ text-shadow:0 0 10px gold,0 0 20px gold; } to{ text-shadow:0 0 20px gold,0 0 40px gold; } }
+  #scratch-canvas { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; cursor:pointer; transition:opacity 0.5s ease; touch-action: none; }
+  #prize-container { width:100%; height:100%; background-size:cover; background-position:center; border-radius:16px; display:flex; align-items:center; justify-content:center; transition:transform 0.5s ease; }
+  #prize-name-display { display:none; background:rgba(0,0,0,0.8); padding:20px 30px; border-radius:12px; font-weight:900; font-size:1.8rem; text-shadow:0 0 10px gold; animation: glowWin 0.8s ease infinite alternate; color: #ffd700; }
+  
+  @keyframes glowWin { 
+    from{ 
+      text-shadow:0 0 10px gold,0 0 20px gold, 0 0 30px #ff9500; 
+      transform: scale(1);
+    } 
+    to{ 
+      text-shadow:0 0 20px gold,0 0 40px gold, 0 0 60px #ff9500; 
+      transform: scale(1.05);
+    } 
+  }
 
   /* PARTICELLE */
   .particle { position:absolute; width:6px; height:6px; border-radius:50%; background:gold; pointer-events:none; }
@@ -177,6 +187,108 @@
       opacity: 0;
     }
   }
+
+  /* Animazione vincita - Shake */
+  @keyframes winShake {
+    0%, 100% { transform: translateX(0) scale(1); }
+    10% { transform: translateX(-5px) scale(1.02); }
+    20% { transform: translateX(5px) scale(1.02); }
+    30% { transform: translateX(-5px) scale(1.02); }
+    40% { transform: translateX(5px) scale(1.02); }
+    50% { transform: translateX(0) scale(1.05); }
+    60% { transform: translateX(-3px) scale(1.05); }
+    70% { transform: translateX(3px) scale(1.05); }
+    80% { transform: translateX(-2px) scale(1.05); }
+    90% { transform: translateX(2px) scale(1.05); }
+  }
+
+  /* Animazione vincita - Pulse */
+  @keyframes winPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  /* Animazione vincita - Glow intenso */
+  @keyframes intenseGlow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(255,215,0,0.5), inset 0 0 20px rgba(255,215,0,0.3);
+    }
+    50% { 
+      box-shadow: 0 0 40px rgba(255,215,0,1), inset 0 0 40px rgba(255,215,0,0.6), 0 0 60px rgba(255,165,0,0.8);
+    }
+  }
+
+  .win-animation {
+    animation: winShake 0.6s ease-in-out, intenseGlow 1.5s ease-in-out infinite !important;
+  }
+
+  /* Overlay vincita */
+  #win-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  #win-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+    padding: 40px 60px;
+    border-radius: 20px;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.5);
+    z-index: 1000;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 50px rgba(255,215,0,0.8), 0 0 100px rgba(255,165,0,0.6);
+  }
+
+  @keyframes popIn {
+    0% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Stelle di celebrazione */
+  .celebration-star {
+    position: fixed;
+    font-size: 3rem;
+    z-index: 1001;
+    animation: starBurst 1s ease-out forwards;
+  }
+
+  @keyframes starBurst {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--tx), var(--ty)) scale(0);
+      opacity: 0;
+    }
+  }
 </style>
 </head>
 <body>
@@ -185,7 +297,7 @@
 <div id="splash">
   <!-- Logo Container -->
   <div id="logo-container">
-    <img id="logo-image" src="1000214841.jpg" alt="Grow$cratch Logo">
+    <img id="logo-image" src="1000216417.png" alt="Grow$cratch Logo">
     <div class="logo-star" style="animation-delay: 0s;">⭐</div>
     <div class="logo-star" style="animation-delay: 1s;">✨</div>
     <div class="logo-star" style="animation-delay: 2s;">💫</div>
@@ -214,6 +326,10 @@
   </div>
   <div id="result-text" class="mt-4 text-xl font-bold text-yellow-400 hidden"></div>
 </div>
+
+<!-- Win Overlay -->
+<div id="win-overlay"></div>
+<div id="win-message"></div>
 
 <script>
 // --- AUDIO CONTEXT ---
@@ -276,6 +392,25 @@ function createConfetti() {
             document.body.appendChild(confetti);
             setTimeout(() => confetti.remove(), 4000);
         }, i * 50);
+    }
+}
+
+// --- CELEBRATION STARS ---
+function createCelebrationStars(x, y) {
+    for(let i = 0; i < 12; i++) {
+        const star = document.createElement('div');
+        star.className = 'celebration-star';
+        star.textContent = '⭐';
+        star.style.left = x + 'px';
+        star.style.top = y + 'px';
+        const angle = (i / 12) * Math.PI * 2;
+        const distance = 150;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        star.style.setProperty('--tx', tx + 'px');
+        star.style.setProperty('--ty', ty + 'px');
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 1000);
     }
 }
 
@@ -379,6 +514,9 @@ const container = document.getElementById('canvas-container');
 const prizeDisplay = document.getElementById('prize-name-display');
 const resultText = document.getElementById('result-text');
 const walletButton = document.getElementById('walletButton');
+const winOverlay = document.getElementById('win-overlay');
+const winMessage = document.getElementById('win-message');
+const prizeContainer = document.getElementById('prize-container');
 
 function resizeCanvas(){ canvas.width=container.clientWidth; canvas.height=container.clientHeight; }
 resizeCanvas();
@@ -443,6 +581,9 @@ function checkScratchCompletion(){
         prizeDisplay.textContent=currentPrize.name;
         walletButton.classList.remove('hidden');
         
+        // Aggiungi animazione al container
+        prizeContainer.classList.add('win-animation');
+        
         if(currentPrize.type === 'lose') {
             resultText.textContent='Hai perso! 😢';
             playLoseSound();
@@ -450,15 +591,30 @@ function checkScratchCompletion(){
             resultText.textContent='🎉 JACKPOT! 🎉 Paga 1 TON per rivelare il premio';
             playJackpotSound();
             createConfetti();
+            showWinAnimation('🎉 JACKPOT! 🎉');
+            createCelebrationStars(window.innerWidth/2, window.innerHeight/2);
         } else {
             resultText.textContent='Hai vinto! Paga 1 TON per rivelare il premio';
             playWinSound();
             createConfetti();
+            showWinAnimation('🎉 HAI VINTO! 🎉');
+            createCelebrationStars(window.innerWidth/2, window.innerHeight/2);
         }
         
         resultText.classList.remove('hidden');
         canvas.style.opacity=0;
     }
+}
+
+function showWinAnimation(message) {
+    winOverlay.style.display = 'block';
+    winMessage.textContent = message;
+    winMessage.style.display = 'block';
+    
+    setTimeout(() => {
+        winOverlay.style.display = 'none';
+        winMessage.style.display = 'none';
+    }, 3000);
 }
 
 // --- BUTTONS ---
@@ -469,6 +625,9 @@ document.getElementById('playButton').addEventListener("click",()=>{
     walletButton.classList.add('hidden');
     resultText.classList.add('hidden');
     canvas.style.opacity=1;
+    prizeContainer.classList.remove('win-animation');
+    winOverlay.style.display = 'none';
+    winMessage.style.display = 'none';
     drawOverlay();
     const starsLink=`https://t.me/GrowScratch_bot?startapp=buy_25stars_${user.id}`;
     window.Telegram.WebApp.openLink(starsLink);
@@ -486,3 +645,4 @@ function initApp(){ window.Telegram.WebApp.ready(); window.Telegram.WebApp.expan
 </script>
 </body>
 </html>
+
