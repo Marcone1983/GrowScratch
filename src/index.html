@@ -1,175 +1,205 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowScratch - Gratta e Vinci Premi Reali!</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f0f0f0; }
-        .container { max-width: 400px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .scratch-area { width: 100%; height: 200px; background-color: #ccc; border-radius: 5px; margin: 20px 0; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: #333; }
-        button { padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        #playButton { background-color: #4CAF50; color: white; }
-        #revealButton { background-color: #2196F3; color: white; display: none; }
-        .hidden { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grow$cratch NFT</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
+  body, html { margin:0; padding:0; height:100%; font-family: 'Inter', sans-serif; background: #0f0f0f; color:white; overflow:hidden; }
+  /* --- SPLASH --- */
+  #splash { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0f0f0f; z-index:100; }
+  #logo { font-size:3rem; font-weight:900; color:gold; text-shadow:0 0 10px #ffd700,0 0 20px #ffa500; margin-bottom:40px; }
+  #progress-bar { width:80%; height:20px; background:#333; border-radius:10px; overflow:hidden; position:relative; }
+  #progress-fill { height:100%; background:linear-gradient(90deg, gold, orange); width:0%; position:relative; }
+  #coin { position:absolute; top:-10px; left:0; width:40px; height:40px; background:gold; border-radius:50%; box-shadow:0 0 10px yellow; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; }
+
+  /* --- APP --- */
+  #app { display:none; text-align:center; padding:4px; }
+  .canvas-container { position:relative; max-width:400px; margin:20px auto; aspect-ratio:1/1; overflow:hidden; border-radius:16px; }
+  #scratch-canvas { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; cursor:pointer; transition:opacity 0.5s ease; }
+  #prize-container { width:100%; height:100%; background-image:url('1000214841.jpg'); background-size:cover; background-position:center; border-radius:16px; display:flex; align-items:center; justify-content:center; transition:transform 0.5s ease; }
+  #prize-name-display { display:none; background:rgba(0,0,0,0.7); padding:10px 16px; border-radius:12px; font-weight:900; font-size:1.6rem; text-shadow:0 0 10px gold; animation: glow 1s ease infinite alternate; }
+  @keyframes glow { from{ text-shadow:0 0 10px gold,0 0 20px gold; } to{ text-shadow:0 0 20px gold,0 0 40px gold; } }
+
+  /* PARTICELLE */
+  .particle { position:absolute; width:6px; height:6px; border-radius:50%; background:gold; pointer-events:none; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>GrowScratch ✨</h1>
-        <p>Gratta e Vinci Premi Reali!</p>
 
-        <div id="infoSection">
-            <h2>❓ Come Funziona</h2>
-            <ul>
-                <li>⭐ Paga 25 Stars per giocare</li>
-                <li>🖱️ Gratta il biglietto con il mouse o il dito</li>
-                <li>🎁 Se vinci, paga 1 TON per riscattare il premio</li>
-            </ul>
-            <button id="playButton">Gioca Ora (25 Stars)</button>
-        </div>
+<!-- SPLASH -->
+<div id="splash">
+  <div id="logo">Grow$cratch</div>
+  <div id="progress-bar">
+    <div id="progress-fill"></div>
+    <div id="coin">🪙</div>
+  </div>
+</div>
 
-        <div id="gameSection" class="hidden">
-            <h2>Biglietto</h2>
-            <div class="scratch-area" id="scratchArea">
-                GRATTA QUI
-            </div>
-            <p id="resultMessage" class="hidden"></p>
-            <button id="revealButton">Riscatta Premio (1 TON)</button>
-        </div>
-
-        <div id="paymentSection" class="hidden">
-            <h2>Pagamento in corso...</h2>
-            <p id="paymentStatus">In attesa di conferma...</p>
-        </div>
+<!-- APP -->
+<div id="app">
+  <h1 class="text-3xl font-bold mb-4">GrowScratch NFT 🎰</h1>
+  <p>Benvenuto <span id="username"></span>!</p>
+  <div class="canvas-container" id="canvas-container">
+    <div id="prize-container">
+      <div id="prize-name-display"></div>
     </div>
+    <canvas id="scratch-canvas"></canvas>
+  </div>
+  <div class="mt-4 space-y-2">
+    <button id="playButton" class="bg-green-600 px-6 py-2 rounded-xl hover:bg-green-500 transition">Gioca con 25 Stars 🌟</button>
+    <button id="walletButton" class="bg-blue-600 px-6 py-2 rounded-xl hover:bg-blue-500 transition hidden">Paga 1 TON 🪙</button>
+  </div>
+  <div id="result-text" class="mt-4 text-xl font-bold text-yellow-400 hidden"></div>
+</div>
 
-    <script>
-        const webApp = window.Telegram.WebApp;
-        const playButton = document.getElementById('playButton');
-        const revealButton = document.getElementById('revealButton');
-        const infoSection = document.getElementById('infoSection');
-        const gameSection = document.getElementById('gameSection');
-        const paymentSection = document.getElementById('paymentSection');
-        const paymentStatus = document.getElementById('paymentStatus');
-        const resultMessage = document.getElementById('resultMessage');
+<script>
+// --- SPLASH ANIMATION ---
+const splash = document.getElementById('splash');
+const progressFill = document.getElementById('progress-fill');
+const coin = document.getElementById('coin');
 
-        let hasWon = false;
+let progress = 0;
+const splashInterval = setInterval(() => {
+    progress += Math.random()*3 + 1; // velocità casuale
+    if(progress>=100) progress=100;
+    progressFill.style.width = progress + '%';
+    coin.style.left = `calc(${progress}% - 20px)`;
+    if(progress>=100){
+        clearInterval(splashInterval);
+        setTimeout(()=>{ splash.style.display='none'; document.getElementById('app').style.display='block'; initApp(); },500);
+    }
+},30);
 
-        // 1. Inizializzazione
-        webApp.ready();
-        webApp.MainButton.hide();
+// --- UTENTE ---
+let user = { first_name:"Guest", id:0 };
+if(window.Telegram?.WebApp?.initDataUnsafe?.user) user = window.Telegram.WebApp.initDataUnsafe.user;
+document.getElementById('username').textContent = user.first_name;
 
-        // Funzione per simulare la vincita/perdita
-        function determineWin() {
-            // Logica di vincita: 50% di possibilità per l'esempio
-            hasWon = Math.random() < 0.5;
-            resultMessage.textContent = hasWon ? "HAI VINTO! Clicca per riscattare." : "Non hai vinto. Riprova!";
-            resultMessage.classList.remove('hidden');
-            
-            if (hasWon) {
-                revealButton.style.display = 'block';
-            }
-        }
+// --- PREMI ---
+const PRIZES = [
+    {name:'Entrata gratis Live', type:'reward', probability:0.15},
+    {name:'Entrata gratis Lezione', type:'reward', probability:0.15},
+    {name:'10% di sconto Grow Shop', type:'reward', probability:0.15},
+    {name:'10% di sconto God Shop', type:'reward', probability:0.075},
+    {name:'NFT Seed', type:'reward', probability:0.075},
+    {name:'Skin Piece', type:'collection', probability:0.10},
+    {name:'God Voice Token', type:'reward', probability:0.05},
+    {name:'1 mese pubblicità gratuita', type:'reward', probability:0.05},
+    {name:'G-ELITE Jackpot', type:'jackpot', probability:0.000001},
+    {name:'Hai perso', type:'lose', probability:0.20}
+];
+let currentPrize = null;
+let scratchComplete = false;
 
-        // Funzione per tornare alla schermata iniziale
-        function resetApp() {
-            paymentSection.classList.add('hidden');
-            gameSection.classList.add('hidden');
-            infoSection.classList.remove('hidden');
-            revealButton.style.display = 'none';
-            resultMessage.classList.add('hidden');
-            document.getElementById('scratchArea').textContent = 'GRATTA QUI';
-        }
+function drawPrize() {
+    const rand = Math.random();
+    let cumulative = 0;
+    for(let p of PRIZES){
+        cumulative += p.probability;
+        if(rand<=cumulative) return p;
+    }
+    return {name:'Hai perso', type:'lose'};
+}
 
-        // --- LOGICA DI PAGAMENTO STARS (25 STARS) ---
-        playButton.onclick = () => {
-            if (!webApp.isVersionAtLeast('6.0')) {
-                webApp.showAlert("La tua versione di Telegram non supporta i pagamenti Stars.");
-                return;
-            }
+// --- CANVAS ---
+const canvas = document.getElementById('scratch-canvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvas-container');
+const prizeDisplay = document.getElementById('prize-name-display');
+const resultText = document.getElementById('result-text');
+const walletButton = document.getElementById('walletButton');
 
-            // Nascondi l'interfaccia e mostra lo stato del pagamento
-            infoSection.classList.add('hidden');
-            paymentSection.classList.remove('hidden');
-            paymentStatus.textContent = "Richiesta di pagamento 25 Stars in corso...";
-            
-            // L'URL dell'invoice DEVE essere generato dal tuo bot/server.
-            // Questo è un placeholder.
-            const starsInvoice = "https://t.me/wallet/invoice?startapp=stars_25_invoice_id"; 
+function resizeCanvas(){ canvas.width=container.clientWidth; canvas.height=container.clientHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-            // Apri l'invoice per il pagamento Stars
-            webApp.openInvoice(starsInvoice, (status) => {
-                // Questa callback viene chiamata quando l'utente chiude l'invoice.
-                // Lo stato può essere 'paid', 'cancelled', 'failed', 'pending'.
+function drawOverlay(){
+    ctx.globalCompositeOperation='source-over';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#555';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='white';
+    ctx.font='bold 20px Inter';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('GRATTA PER SCOPRIRE', canvas.width/2, canvas.height/2);
+    ctx.globalCompositeOperation='destination-out';
+}
 
-                if (status === 'paid') {
-                    // **CORREZIONE DEL BUG PER STARS:**
-                    // Il bug qui è che il frontend si fida del callback `status === 'paid'`.
-                    // Per una vera sicurezza, il tuo bot DEVE ricevere un webhook di conferma.
-                    // Senza backend, assumiamo il successo e procediamo.
-                    
-                    paymentStatus.textContent = "Pagamento Stars effettuato. Inizio gioco.";
-                    
-                    setTimeout(() => {
-                        paymentSection.classList.add('hidden');
-                        gameSection.classList.remove('hidden');
-                        determineWin();
-                    }, 2000); 
+canvas.addEventListener("mousedown",()=>scratching=true);
+canvas.addEventListener("mouseup",()=>{ scratching=false; checkScratchCompletion(); });
+canvas.addEventListener("mousemove",(e)=>{if(!scratching||scratchComplete) return; createScratch(e); });
 
-                } else {
-                    paymentStatus.textContent = `Pagamento Stars annullato o fallito (${status}). Riprova.`;
-                    setTimeout(resetApp, 3000);
-                }
-            });
-        };
+function createScratch(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX-rect.left;
+    const y = e.clientY-rect.top;
+    ctx.beginPath();
+    ctx.arc(x,y,30,0,Math.PI*2);
+    ctx.fill();
+    createParticle(x,y);
+}
 
-        // --- LOGICA DI PAGAMENTO TON (1 TON) ---
-        revealButton.onclick = () => {
-            if (!hasWon) return;
+// --- PARTICELLE ---
+function createParticle(x,y){
+    const particle = document.createElement('div');
+    particle.className='particle';
+    document.body.appendChild(particle);
+    particle.style.left=x+'px';
+    particle.style.top=y+'px';
+    const dx=(Math.random()-0.5)*20, dy=(Math.random()-0.5)*20;
+    let life=0;
+    const interval=setInterval(()=>{
+        life++;
+        particle.style.transform=`translate(${dx*life/10}px,${dy*life/10}px)`;
+        particle.style.opacity=1-life/10;
+        if(life>10){ clearInterval(interval); particle.remove(); }
+    },16);
+}
 
-            // Nascondi l'interfaccia e mostra lo stato del pagamento
-            gameSection.classList.add('hidden');
-            paymentSection.classList.remove('hidden');
-            paymentStatus.textContent = "Richiesta di pagamento 1 TON in corso...";
-            
-            // **CORREZIONE PER TON SENZA BACKEND (Wallet Pay Link):**
-            // Usiamo openTelegramLink per aprire un link di trasferimento diretto Wallet Pay.
-            // Questo è il modo più vicino alla tua richiesta "solo TMA SDK" per TON.
-            const tonWalletAddress = "UQArbhbVEIkN4xSWis30yIrNGdmOTBbiMBduGeNTErPbviyR";
-            const tonAmount = "1000000000"; // 1 TON in nanoTON
-            
-            // Link di trasferimento Wallet Pay
-            const walletPayLink = `https://t.me/wallet/transfer?text=GrowScratch_Redeem&amount=${tonAmount}&to=${tonWalletAddress}`;
-            
-            webApp.openTelegramLink(walletPayLink);
-            
-            // **PUNTO CRITICO: IL BUG DI SICUREZZA PERSISTE QUI**
-            // openTelegramLink NON fornisce un feedback di successo/fallimento.
-            // L'utente può annullare la transazione ma il codice qui sotto verrà comunque eseguito.
-            
-            // **SENZA VERIFICA ON-CHAIN, QUESTO È IL BUG CHE DEVI ACCETTARE.**
-            
-            paymentStatus.textContent = "Pagamento TON (simulato) in attesa di verifica...";
-            
-            setTimeout(() => {
-                // Senza verifica on-chain, questo è il punto in cui il bug si manifesta.
-                paymentStatus.textContent = "Verifica TON completata (NON SICURA). Premio riscattato!";
-                revealButton.style.display = 'none';
-                resultMessage.textContent = "PREMIO RISCATTATO! Controlla i tuoi messaggi.";
-                
-                setTimeout(resetApp, 3000);
-            }, 2000); 
-        };
+function checkScratchCompletion(){
+    const pixels = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let cleared=0;
+    for(let i=3;i<pixels.length;i+=4) if(pixels[i]===0) cleared++;
+    const percent=cleared/(pixels.length/4)*100;
+    if(percent>70){
+        scratchComplete=true;
+        prizeDisplay.style.display='block';
+        prizeDisplay.textContent=currentPrize.name;
+        walletButton.classList.remove('hidden');
+        resultText.textContent=(currentPrize.type==='lose')?'Hai perso! 😢':'Hai vinto! Paga 1 TON per rivelare il premio';
+        resultText.classList.remove('hidden');
+        canvas.style.opacity=0;
+    }
+}
 
-        // Logica di base per il "gratta e vinci" (solo visuale per l'esempio)
-        const scratchArea = document.getElementById('scratchArea');
-        scratchArea.addEventListener('click', () => {
-            scratchArea.style.backgroundColor = '#fff';
-            scratchArea.textContent = '*** Risultato Rivelato ***';
-        });
+// --- BUTTONS ---
+document.getElementById('playButton').addEventListener("click",()=>{
+    currentPrize=drawPrize();
+    scratchComplete=false;
+    prizeDisplay.style.display='none';
+    walletButton.classList.add('hidden');
+    resultText.classList.add('hidden');
+    canvas.style.opacity=1;
+    drawOverlay();
+    const starsLink=`https://t.me/GrowScratch_bot?startapp=buy_25stars_${user.id}`;
+    window.Telegram.WebApp.openLink(starsLink);
+});
 
-    </script>
+walletButton.addEventListener("click",()=>{
+    if(!currentPrize||currentPrize.type==='lose') return;
+    const tonLink=`https://t.me/GrowScratch_bot?startapp=buy_1ton_${user.id}`;
+    window.Telegram.WebApp.openLink(tonLink);
+    window.Telegram.WebApp.showAlert(`Pagamento 1 TON avviato per riscattare: ${currentPrize.name}`);
+});
+
+// --- INIT ---
+function initApp(){ window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); drawOverlay(); }
+</script>
 </body>
 </html>
