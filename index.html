@@ -308,7 +308,7 @@
   <p>Benvenuto <span id="username"></span>!</p>
   <div class="canvas-container" id="canvas-container">
     <div id="prize-container">
-      <div id="prize-name-display" style="display: none;"></div>
+      <div id="prize-name-display"></div>
     </div>
     <canvas id="scratch-canvas"></canvas>
   </div>
@@ -418,12 +418,50 @@ for(let i = 0; i < 30; i++) {
 const progressFill = document.getElementById('progress-fill');
 const coin = document.getElementById('coin');
 const progressBar = document.getElementById('progress-bar');
-// Inizializzazione immediata per evitare blocchi
-setTimeout(() => {
-    document.getElementById('splash').style.display='none'; 
-    document.getElementById('app').style.display='block'; 
-    initApp();
-}, 500);
+
+let progress = 0;
+const splashInterval = setInterval(() => {
+    progress += Math.random()*3 + 1.5;
+    if(progress>=100) progress=100;
+    progressFill.style.width = (100 - progress) + '%'; // La barra di riempimento si riduce per rivelare il giallo
+    coin.style.left = `calc(${progress}% - 28px)`;
+    
+    // Crea particelle di grattata
+    if(progress > 5 && Math.random() > 0.5) {
+        const particle = document.createElement('div');
+        particle.className = 'scratch-particle';
+        const rect = progressBar.getBoundingClientRect();
+        particle.style.left = (rect.left + (progress/100) * rect.width) + 'px';
+        particle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+        document.body.appendChild(particle);
+        
+        const dx = (Math.random() - 0.5) * 40;
+        const dy = (Math.random() - 0.5) * 40;
+        let life = 0;
+        const particleInterval = setInterval(() => {
+            life++;
+            particle.style.transform = `translate(${dx * life / 10}px, ${dy * life / 10}px) scale(${1 - life/10})`;
+            particle.style.opacity = 1 - life / 10;
+            if(life > 10) {
+                clearInterval(particleInterval);
+                particle.remove();
+            }
+        }, 16);
+    }
+    
+    if(progress>=100){
+        clearInterval(splashInterval);
+        setTimeout(()=>{ 
+            splash.style.transition = 'opacity 0.5s ease';
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display='none'; 
+                document.getElementById('app').style.display='block'; 
+                initApp();
+            }, 500);
+        },500);
+    }
+},30);
 let user = { first_name:"Guest", id:0 };
 if(window.Telegram?.WebApp?.initDataUnsafe?.user) user = window.Telegram.WebApp.initDataUnsafe.user;
 document.getElementById('username').textContent = user.first_name;
