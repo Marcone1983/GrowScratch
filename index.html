@@ -49,6 +49,7 @@
     position: relative;
     animation: logoFloat 3s ease-in-out infinite;
     /* Rimosso il filtro che causava il quadrato arancione */
+    filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)) drop-shadow(0 0 60px rgba(255,165,0,0.6)); /* Aggiungo un filtro meno aggressivo per il glow */
   }
   
   #logo-image {
@@ -150,9 +151,9 @@
   }
 
   #app { display:none; text-align:center; padding:4px; }
-  .canvas-container { position:relative; max-width:400px; margin:20px auto; aspect-ratio:1/1; overflow:hidden; border-radius:16px; }
+  .canvas-container { position:relative; max-width:400px; margin:20px auto; aspect-ratio:1/1; border-radius:16px; }
   #scratch-canvas { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; cursor:pointer; transition:opacity 0.5s ease; touch-action: none; }
-  #prize-container { width:100%; height:100%; background-image:url('1000214841.jpg'); background-size:cover; background-position:center; border-radius:16px; display:flex; align-items:center; justify-content:center; transition:transform 0.5s ease; }
+  #prize-container { width:100%; height:100%; background-image:url('1000214841.jpg'); background-size:contain; background-repeat: no-repeat; background-position:center; border-radius:16px; display:flex; align-items:center; justify-content:center; transition:transform 0.5s ease; }
   #prize-name-display { display:none; background:rgba(0,0,0,0.8); padding:20px 30px; border-radius:12px; font-weight:900; font-size:1.8rem; text-shadow:0 0 10px gold; animation: glowWin 0.8s ease infinite alternate; color: #ffd700; }
   
   @keyframes glowWin { 
@@ -597,7 +598,28 @@ function showWinAnimation(message) {
     }, 3000);
 }
 
-document.getElementById('playButton').addEventListener("click",()=>{
+document.getElementById('playButton').addEventListener("click",(e)=>{
+    e.preventDefault(); // Impedisce il ricaricamento della pagina
+    
+    // Logica TWA: apre il link per il pagamento delle 25 Stars
+    const starsLink=`https://t.me/GrowScratch_bot?startapp=buy_25stars_${user.id}`;
+    window.Telegram.WebApp.openLink(starsLink);
+    
+    // Simula l'azione dopo il pagamento (in un ambiente reale, questa parte sarebbe gestita da un callback TWA)
+    // Per ora, proseguiamo con la logica di gioco come se il pagamento fosse avvenuto
+    setTimeout(() => {
+        currentPrize=drawPrize();
+        scratchComplete=false;
+        prizeDisplay.style.display='none';
+        walletButton.classList.add('hidden');
+        resultText.classList.add('hidden');
+        canvas.style.opacity=1;
+        prizeContainer.classList.remove('win-animation');
+        winOverlay.style.display = 'none';
+        winMessage.style.display = 'none';
+        drawOverlay();
+    }, 500); // Piccolo ritardo per simulare l'interazione con TWA
+});
     currentPrize=drawPrize();
     scratchComplete=false;
     prizeDisplay.style.display='none';
@@ -614,12 +636,20 @@ document.getElementById('playButton').addEventListener("click",()=>{
 
 walletButton.addEventListener("click",()=>{
     if(!currentPrize||currentPrize.type==='lose') return;
-    const tonLink=`https://t.me/GrowScratch_bot?startapp=buy_1ton_${user.id}`;
+    
+    // Logica TWA: apre il link per il minting NFT (pagamento 1 TON)
+    const tonLink=`https://t.me/GrowScratch_bot?startapp=mint_nft_1ton_${user.id}_${encodeURIComponent(currentPrize.name)}`;
     window.Telegram.WebApp.openLink(tonLink);
-    window.Telegram.WebApp.showAlert(`Pagamento 1 TON avviato per riscattare: ${currentPrize.name}`);
+    window.Telegram.WebApp.showAlert(`Pagamento 1 TON avviato per mintare l'NFT: ${currentPrize.name}`);
 });
 
-function initApp(){ window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); drawOverlay(); }
+function initApp(){ 
+    window.Telegram.WebApp.ready(); 
+    window.Telegram.WebApp.expand(); 
+    drawOverlay(); 
+    // Nascondi l'elemento giallo all'avvio
+    prizeDisplay.style.display='none'; 
+}
 </script>
 </body>
 </html>
