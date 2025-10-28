@@ -605,33 +605,11 @@ document.getElementById('playButton').addEventListener("click",(e)=>{
     const starsLink=`https://t.me/GrowScratch_bot?startapp=buy_25stars_${user.id}`;
     window.Telegram.WebApp.openLink(starsLink);
     
-    // Simula l'azione dopo il pagamento (in un ambiente reale, questa parte sarebbe gestita da un callback TWA)
-    // Per ora, proseguiamo con la logica di gioco come se il pagamento fosse avvenuto
-    setTimeout(() => {
-        currentPrize=drawPrize();
-        scratchComplete=false;
-        prizeDisplay.style.display='none';
-        walletButton.classList.add('hidden');
-        resultText.classList.add('hidden');
-        canvas.style.opacity=1;
-        prizeContainer.classList.remove('win-animation');
-        winOverlay.style.display = 'none';
-        winMessage.style.display = 'none';
-        drawOverlay();
-    }, 500); // Piccolo ritardo per simulare l'interazione con TWA
+    // NOTA: La logica di gioco (drawPrize, drawOverlay, ecc.) deve essere richiamata 
+    // solo DOPO che il bot Telegram ha confermato il pagamento. 
+    // Per ora, l'utente dovrà ricaricare manualmente la TWA se il bot non fornisce un callback.
 });
-    currentPrize=drawPrize();
-    scratchComplete=false;
-    prizeDisplay.style.display='none';
-    walletButton.classList.add('hidden');
-    resultText.classList.add('hidden');
-    canvas.style.opacity=1;
-    prizeContainer.classList.remove('win-animation');
-    winOverlay.style.display = 'none';
-    winMessage.style.display = 'none';
-    drawOverlay();
-    const starsLink=`https://t.me/GrowScratch_bot?startapp=buy_25stars_${user.id}`;
-    window.Telegram.WebApp.openLink(starsLink);
+
 });
 
 walletButton.addEventListener("click",()=>{
