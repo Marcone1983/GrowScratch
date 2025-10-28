@@ -308,7 +308,7 @@
   <p>Benvenuto <span id="username"></span>!</p>
   <div class="canvas-container" id="canvas-container">
     <div id="prize-container">
-      <div id="prize-name-display"></div>
+      <div id="prize-name-display" style="display: none;"></div>
     </div>
     <canvas id="scratch-canvas"></canvas>
   </div>
@@ -417,12 +417,14 @@ for(let i = 0; i < 30; i++) {
 
 const progressFill = document.getElementById('progress-fill');
 const coin = document.getElementById('coin');
-const progressBar = document.g// Inizializzazione immediata per evitare blocchi
+const progressBar = document.getElementById('progress-bar');
+// Inizializzazione immediata per evitare blocchi
 setTimeout(() => {
     document.getElementById('splash').style.display='none'; 
     document.getElementById('app').style.display='block'; 
     initApp();
-}, 500);et user = { first_name:"Guest", id:0 };
+}, 500);
+let user = { first_name:"Guest", id:0 };
 if(window.Telegram?.WebApp?.initDataUnsafe?.user) user = window.Telegram.WebApp.initDataUnsafe.user;
 document.getElementById('username').textContent = user.first_name;
 
