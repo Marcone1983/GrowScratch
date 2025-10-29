@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FFD700">
+    <title>GrowScratch NFT - Gratta e Vinci</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- TON Connect UI -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="assets/logo.png" as="image">
+    <link rel="preload" href="assets/scratch-card.jpg" as="image">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <img src="assets/logo.png" alt="GrowScratch Logo" class="splash-logo">
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="splash-text">Caricamento...</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app hidden">
+        <!-- Header -->
+        <header class="header">
+            <img src="assets/logo.png" alt="GrowScratch" class="header-logo">
+            <div class="user-info">
+                <span id="username" class="username"></span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- State: Idle (Initial) -->
+            <div id="state-idle" class="state-container">
+                <div class="card">
+                    <img src="assets/scratch-card.jpg" alt="Gratta e Vinci" class="card-preview">
+                    <h2 class="card-title">Gratta e Vinci NFT!</h2>
+                    <p class="card-description">
+                        Paga 25 ⭐ Stars per giocare e avere la possibilità di vincere NFT esclusivi!
+                    </p>
+                    <button id="btn-play" class="btn btn-primary btn-large">
+                        🎮 Gioca con 25 Stars
+                    </button>
+                </div>
+            </div>
+
+            <!-- State: Playing (Scratch Card) -->
+            <div id="state-playing" class="state-container hidden">
+                <div class="scratch-container">
+                    <h2 class="scratch-title">Gratta per scoprire!</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="scratch-canvas" class="scratch-canvas"></canvas>
+                        <div id="scratch-result" class="scratch-result hidden">
+                            <div id="result-content"></div>
+                        </div>
+                    </div>
+                    <div class="scratch-progress">
+                        <div class="progress-bar">
+                            <div id="scratch-progress-fill" class="progress-fill"></div>
+                        </div>
+                        <p class="progress-text">Gratta almeno il 70% per rivelare il risultato</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State: Won (Connect Wallet) -->
+            <div id="state-won" class="state-container hidden">
+                <div class="card win-card">
+                    <div class="win-animation">🎉</div>
+                    <h2 class="win-title">HAI VINTO!</h2>
+                    <div id="prize-preview" class="prize-preview">
+                        <img id="prize-image" src="" alt="Premio" class="prize-image">
+                        <h3 id="prize-name" class="prize-name"></h3>
+                    </div>
+                    <p class="win-description">
+                        Connetti il tuo wallet TON e paga 1 TON per mintare il tuo NFT!
+                    </p>
+                    
+                    <!-- TON Connect Button Container -->
+                    <div id="ton-connect-button" class="ton-connect-container"></div>
+                    
+                    <button id="btn-mint-nft" class="btn btn-primary btn-large hidden">
+                        💎 Minta NFT (1 TON)
+                    </button>
+                </div>
+            </div>
+
+            <!-- State: Lost -->
+            <div id="state-lost" class="state-container hidden">
+                <div class="card lost-card">
+                    <div class="lost-animation">😢</div>
+                    <h2 class="lost-title">Non hai vinto questa volta</h2>
+                    <p class="lost-description">
+                        Riprova! Ogni giocata ha una nuova possibilità di vincere NFT esclusivi.
+                    </p>
+                    <button id="btn-play-again" class="btn btn-primary btn-large">
+                        🔄 Gioca di nuovo (25 Stars)
+                    </button>
+                </div>
+            </div>
+
+            <!-- State: Minting -->
+            <div id="state-minting" class="state-container hidden">
+                <div class="card minting-card">
+                    <div class="minting-animation">
+                        <div class="spinner"></div>
+                    </div>
+                    <h2 class="minting-title">Minting NFT in corso...</h2>
+                    <p class="minting-description">
+                        Attendere mentre il tuo NFT viene creato sulla blockchain TON.
+                    </p>
+                    <div class="minting-steps">
+                        <div id="step-payment" class="step">
+                            <span class="step-icon">⏳</span>
+                            <span class="step-text">Verifica pagamento...</span>
+                        </div>
+                        <div id="step-mint" class="step">
+                            <span class="step-icon">⏳</span>
+                            <span class="step-text">Minting NFT...</span>
+                        </div>
+                        <div id="step-transfer" class="step">
+                            <span class="step-icon">⏳</span>
+                            <span class="step-text">Trasferimento al wallet...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State: Success -->
+            <div id="state-success" class="state-container hidden">
+                <div class="card success-card">
+                    <div class="success-animation">✅</div>
+                    <h2 class="success-title">NFT Mintato con Successo!</h2>
+                    <div class="nft-details">
+                        <img id="nft-image" src="" alt="NFT" class="nft-image">
+                        <h3 id="nft-name" class="nft-name"></h3>
+                        <p class="nft-address">
+                            <strong>Indirizzo NFT:</strong><br>
+                            <span id="nft-address-text" class="nft-address-text"></span>
+                        </p>
+                    </div>
+                    <p class="success-description">
+                        Il tuo NFT è stato inviato al tuo wallet TON!
+                    </p>
+                    <div class="success-actions">
+                        <button id="btn-view-nft" class="btn btn-secondary">
+                            👁️ Visualizza su Explorer
+                        </button>
+                        <button id="btn-play-new" class="btn btn-primary">
+                            🎮 Gioca di nuovo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="state-error" class="state-container hidden">
+                <div class="card error-card">
+                    <div class="error-animation">❌</div>
+                    <h2 class="error-title">Si è verificato un errore</h2>
+                    <p id="error-message" class="error-message"></p>
+                    <button id="btn-retry" class="btn btn-primary">
+                        🔄 Riprova
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">
+                <a href="#" id="link-terms">Termini e Condizioni</a> | 
+                <a href="#" id="link-support">Supporto</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/telegram.js"></script>
+    <script src="js/tonconnect.js"></script>
+    <script src="js/scratch.js"></script>
+    <script src="js/payment.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
